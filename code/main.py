@@ -65,9 +65,8 @@ class MainWindow(QMainWindow):
         #jquery = QFile(':/jquery.min.js')
         jquery = QFile('/home/chris/research_notes/mars_internet/code/jquery-3.6.0.min.js')
         isopen = jquery.open(QFile.ReadOnly)
-        print('is open? {}'.format(isopen))
         self.jquery_code = bytes(jquery.readAll()).decode('utf-8')
-        #self.web_engine_view.page().runJavaScript(self.jquery_code)
+        self.web_engine_view.page().runJavaScript(self.jquery_code)
         jquery.close()
 
         self.setGeometry(0, 0, 1080, 800)
@@ -104,7 +103,8 @@ class MainWindow(QMainWindow):
     def content_manip(self):
         self.web_engine_view.page().runJavaScript(self.jquery_code)
         code = "var qt = {'jQuery': jQuery.noConflict(true)};"
-        code += "qt.jQuery('a').each(function () {qt.jQuery(this).css('background-color', 'yellow')})"
+        code += "qt.jQuery('a').each(function () {qt.jQuery(this).css('background-color', 'yellow')});"
+        code += "qt.jQuery('a').each(function () {qt.jQuery(this).append('(cached)')});"
         self.web_engine_view.page().runJavaScript(code)
         return
 
