@@ -2,9 +2,10 @@
 main.py
 
 https://zetcode.com/pyqt/qwebengineview/
+https://doc.qt.io/qt-5/qtwebengine-webenginewidgets-contentmanipulation-example.html
 """
 
-from PyQt5.QtCore import QUrl
+from PyQt5.QtCore import QUrl, QFile, QIODevice
 from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QPushButton, QWidget, QApplication, QVBoxLayout, QMessageBox, QLineEdit, QToolBar, QMainWindow
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEnginePage
@@ -46,7 +47,10 @@ class MainWindow(QMainWindow):
         self.btn_queue = QPushButton('Queue', self)
         #self.btn_queue.clicked.connect()
         self.toolbar.addWidget(self.btn_queue)
-        
+
+        self.btn_settings = QPushButton('Settings', self)
+        #self.btn_settings.clicked.connect()
+        self.toolbar.addWidget(self.btn_settings)        
 
         self.web_engine_view = QWebEngineView()
         self.web_engine_view.setUrl(QUrl('http://www.google.com'))
@@ -56,13 +60,22 @@ class MainWindow(QMainWindow):
 
         self.web_engine_view.page().titleChanged.connect(self.setWindowTitle)
         self.web_engine_view.page().urlChanged.connect(self.url_changed)
+        self.web_engine_view.page().loadFinished.connect(self.content_manip)
+
+        #jquery = QFile(':/jquery.min.js')
+        jquery = QFile('/home/chris/research_notes/mars_internet/code/jquery-3.6.0.min.js')
+        isopen = jquery.open(QFile.ReadOnly)
+        print('is open? {}'.format(isopen))
+        self.jquery_code = bytes(jquery.readAll()).decode('utf-8')
+        #self.web_engine_view.page().runJavaScript(self.jquery_code)
+        jquery.close()
 
         self.setGeometry(0, 0, 1080, 800)
         self.setWindowTitle('Mars Browser')
         self.show()
 
     def load_page(self):
-        time.sleep(5)
+        #time.sleep(5)
         url = QUrl.fromUserInput(self.address.text())
         if url.isValid():
             self.web_engine_view.load(url)
@@ -87,6 +100,13 @@ class MainWindow(QMainWindow):
 
     def url_changed(self, url):
         self.address.setText(url.toString())
+
+    def content_manip(self):
+        self.web_engine_view.page().runJavaScript(self.jquery_code)
+        code = "var qt = {'jQuery': jQuery.noConflict(true)};"
+        code += "qt.jQuery('a').each(function () {qt.jQuery(this).css('background-color', 'yellow')})"
+        self.web_engine_view.page().runJavaScript(code)
+        return
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
