@@ -18,3 +18,4 @@ PyQtWebEngine==5.15.4
 PyQtWebEngine-Qt5==5.15.2
 traitlets==5.0.5
 wcwidth==0.2.5
+psycopg2
