@@ -20,9 +20,6 @@ import sqlite3
 class DBInterface(object):
     def __init__(self, filepath):
         filepath = os.path.expandvars(filepath)
-        if not os.path.isfile(filepath):
-            raise Exception('File does not exist: {}'.format(filepath))
-
         self.conn = sqlite3.connect(filepath)
         self.cursor = self.conn.cursor()
         return
@@ -34,6 +31,10 @@ class DBInterface(object):
 class CacheDBInterface(DBInterface):
     def __init__(self, filepath):
         super().__init__(filepath)
+
+        filepath = os.path.expandvars(filepath)
+        if not os.path.isfile(filepath):
+            raise Exception('File does not exist: {}'.format(filepath))
         return
 
     def get_all_data(self):
@@ -70,10 +71,17 @@ class CacheDBInterface(DBInterface):
     def get_cache_state(self, url, queue_dur=480):
         """
         Returns either 'NONE', 'QUEUED', or 'CACHED'
-
-        TODO
         """
-        return
+        cmd = "SELECT time_cached FROM cache WHERE url='{}';".format(url)
+        self.cursor.execute(cmd)
+        res = self.cursor.fetchone()
+        if not res:
+            return 'NONE'
+        current_time = time.time()
+        cache_time = res[0]
+        if current_time - cache_time > queue_dur:
+            return 'CACHED'
+        return 'QUEUED'
 
     def add_url_to_cache(self, url, reason_code=0):
         cmd = "INSERT INTO cache VALUES ('{}', {}, {}, {});".format(url, time.time(), 'null', reason_code)
@@ -108,8 +116,19 @@ class CacheDBInterface(DBInterface):
         rows = self.cursor.fetchall()
         return rows
 
-    def get_queued_urls(self):
-        return
+    def get_queued_urls(self, queue_dur=480, num_vals=-1):
+        """
+        Get list of all urls that are in the table and have not completed
+        the queue duration
+
+        Does not update time_last_accessed column
+        """
+        current_time = time.time()
+        queue_start_time = current_time - queue_dur
+        cmd = "SELECT * from cache where time_cached < {} limit {}".format(queue_start_time, num_vals)
+        self.cursor.execute(cmd)
+        rows = self.cursor.fetchall()
+        return rows
 
 class DBInitializer(DBInterface):
     def __init__(self, filepath):
@@ -122,7 +141,7 @@ class DBInitializer(DBInterface):
         Will be a NOOP for tables that already exist.
         """
         # check if table already exists
-        if not self.check_table_exists('cache')
+        if not self.check_table_exists('cache'):
             # build cache table
             self.cursor.execute("""CREATE TABLE cache (url char(256), time_cached timestamp, time_last_accessed timestamp, reason_code int(255));""")
         self.conn.commit()
