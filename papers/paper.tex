@@ -1,0 +1,36 @@
+% To compile run: pdflatex paper.tex
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{graphicx}
+
+\title{Mars Internet}
+\date{2021/07/16}
+\author{Chris Hall}
+
+\begin{document}
+
+\maketitle
+
+\section{Abstract}
+
+\section{Introduction}
+
+The first people on Mars will have a fundamentally different user experience with internet browsing than we are used to. The round trip times for communication between Mars and Earth vary between 9 and 45 minutes, depending on the current orbital state. An internet that makes earth hosted content available to Mars colonists will have to utilize preemptive fetching and caching.
+
+In this paper we describe the construction of an internet browser which emulates the round trip delays that colonists would experience, and provides some basic tools for the user to deal with such delays.
+
+The first tool the Mars browser has is in line link annotations to let the user know if the linked page is cached, in the request queue, or has not been requested yet. If a page is marked as cached, it means the page has been requested from earth, the round trip time has elapsed, and the page data now exists locally on mars. If a page is in the request queue, it means the page has been requested from earth but the round trip time has not elapsed. 
+
+The second tool is a cache management utility. In this utility, a user will be able to see a list of all cached and queued sites. Users will be able to view a list of queued pages they are waiting on, set a length of time for specific pages to remain in the cache, and other cache related tasks. There will be a clear distinction between pages that have bean auto-cached and pages the user manually selected to cache.
+
+\section{Architecture Overview}
+
+
+\section{Limitations}
+
+\section{Conclusion}
+
+\section{References}
+
+\end{document}
+
